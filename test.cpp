@@ -26,7 +26,7 @@ struct KhachHang
 		    int n = 128;
 		    for (int i = 0; i < n-1; i++) {
 		        for (int j = 0; j < n-i-1; j++) {
-		            if (charCount[j].count > charCount[j+1].count || (charCount[j].count == charCount[j+1].count && ((isupper(charCount[j].c) && islower(charCount[j+1].c)) || (islower(charCount[j].c) && islower(charCount[j+1].c) && charCount[j].c > charCount[j+1].c) || (isupper(charCount[j].c) && isupper(charCount[j+1].c) && charCount[j].c > charCount[j+1].c)))) {
+		            if (charCount[j].count > charCount[j+1].count || (charCount[j].count == charCount[j+1].count && (isupper(charCount[j].c) && islower(charCount[j+1].c)) || (islower(charCount[j].c) && islower(charCount[j+1].c) && charCount[j].c > charCount[j+1].c) || (isupper(charCount[j].c) && isupper(charCount[j+1].c) && charCount[j].c > charCount[j+1].c))) {
 		                Name temp = charCount[j];
 		                charCount[j] = charCount[j+1];
 		                charCount[j+1] = temp;
@@ -72,47 +72,46 @@ string anCeasar(const string &name){
 string sortStr(string name){
 	Name charCount[128];
 
-	for (int i = 0; i < 128; i++) {
-		charCount[i].c = i;
-		charCount[i].count = 0;
-	}
+	    for (int i = 0; i < 128; i++) {
+	        charCount[i].c = i;
+	        charCount[i].count = 0;
+	    }
 
-	for (char c : name) {
-		charCount[c].count++;
-	}
-	int n = 128;
-	for (int i = 0; i < n-1; i++) {
-		for (int j = 0; j < n-i-1; j++) {
-			if (charCount[j].count > charCount[j+1].count || (charCount[j].count == charCount[j+1].count && ((isupper(charCount[j].c) && islower(charCount[j+1].c)) || (islower(charCount[j].c) && islower(charCount[j+1].c) && charCount[j].c > charCount[j+1].c) || (isupper(charCount[j].c) && isupper(charCount[j+1].c) && charCount[j].c > charCount[j+1].c)))) {
-				Name temp = charCount[j];
-				charCount[j] = charCount[j+1];
-				charCount[j+1] = temp;
-			}
-		}
-	}
-	string result;
-	for (int i = 0; i < 128; i++) {
-		if (charCount[i].count > 0) {
-			for (int j = 0; j < charCount[i].count; j++)
-			{
-				result += charCount[i].c;
-			}
-		}
-	}
+	    for (char c : name) {
+	        charCount[c].count++;
+	    }
+	    int n = 128;
+	    for (int i = 0; i < n-1; i++) {
+	        for (int j = 0; j < n-i-1; j++) {
+	            if (charCount[j].count > charCount[j+1].count || (charCount[j].count == charCount[j+1].count && (isupper(charCount[j].c) && islower(charCount[j+1].c)) || (islower(charCount[j].c) && islower(charCount[j+1].c) && charCount[j].c > charCount[j+1].c) || (isupper(charCount[j].c) && isupper(charCount[j+1].c) && charCount[j].c > charCount[j+1].c))) {
+	                Name temp = charCount[j];
+	                charCount[j] = charCount[j+1];
+	                charCount[j+1] = temp;
+	            }
+	        }
+	    }
+	    string result;
+	    for (int i = 0; i < 128; i++) {
+	        if (charCount[i].count > 0) {
+	            // result << charCount[i].c << " : " << charCount[i].count << " -> ";
+	        	for (int j = 0; j < charCount[i].count; j++)
+	        	{
+	        		result += charCount[i].c;
+	        	}
+	        }
+	    }
 	return result;	    
 }
-
-
 
 KhachHang khach[1000];
 
 void Lapse(const string& name, int n){
 	string result = sortStr(name);
-	khach[n].name = anCeasar(result);
-	// khach[n].name = sortStr(result);
+	result = anCeasar(result);
+	khach[n].name = sortStr(result);
 	khach[n].cropName();
 	khach[n].Print();
-	// cout << sortStr(khach[n].name);
+	// cout << khach[n].name;
 	cout << endl;
 }
 
