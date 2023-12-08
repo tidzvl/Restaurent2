@@ -102,7 +102,75 @@ string sortStr(string name){
 	return result;	    
 }
 
+struct HuffmanNode
+{
+	char data;
+	int frequency;
+	HuffmanNode* left;
+	HuffmanNode* right;
+	HuffmanNode(char data, int frequency) : data(data), frequency(frequency), left(nullptr), right(nullptr){}
+};
 
+struct CompareNodes
+{
+	bool operator()(HuffmanNode* left, HuffmanNode* right){
+		return left->frequency > right->frequency;
+	}
+};
+
+HuffmanNode* buildHuffmanTree(KhachHang khach[], int n){
+	const size_t arraySize = 256;
+	HuffmanNode* nodes[arraySize];
+
+	for (size_t i = 0; i < arraySize; ++i)
+	{
+		nodes[i] = nullptr;
+	}
+	for (int i = 0; i < khach[n].k; ++i)
+	{
+		nodes[i] = new HuffmanNode(khach[n].khach[i][0][0], stoi(khach[n].khach[i][1]));
+	}
+	while(true){
+		int min1 = -1, min2 = -1;
+		for(size_t i = 0; i < arraySize; ++i){
+			if(nodes[i] != nullptr && nodes[i]->frequency > 0){
+				if(min1 == -1 || nodes[i]->frequency < nodes[min1]->frequency){
+					min2 = min1;
+					min1 = i;
+				}else if (min2 == -1 || nodes[i]->frequency < nodes[min2]->frequency){
+					min2 = i;
+				}
+			}
+		}
+		if(min2 == -1){
+			break;
+		}
+
+		HuffmanNode* internalNode = new HuffmanNode('$', nodes[min1]->frequency + nodes[min2]->frequency);
+		internalNode->left = nodes[min1];
+		internalNode->right = nodes[min2];
+		nodes[min1]->frequency = nodes[min2]->frequency = 0;
+		nodes[min1] = internalNode;
+		nodes[min2] = nullptr;
+	}
+	for(size_t i = 0; i < arraySize; ++i){
+		if(nodes[i] != nullptr){
+			return nodes[i];
+		}
+	}
+
+	return nullptr;
+}
+
+void printHuffmanTree(HuffmanNode* root, string code){
+	if(root){
+		if(root->data != '$'){
+			cout << root->data << ": " << code << endl;
+		}
+		printHuffmanTree(root->left, code + "0");
+		printHuffmanTree(root->right, code + "1");
+	}
+}
 
 KhachHang khach[1000];
 
@@ -134,5 +202,10 @@ void simulate(string filename)
 	    	}else if(line == "HAND"){
 	    	}
 	}
-	cout << "-----------------------------------------" << endl;
+	HuffmanNode* root = buildHuffmanTree(khach, 0);
+	for(int i = 0; i < n; i++){
+		cout << "-----------------------------------------" << endl;
+		root = buildHuffmanTree(khach, i);
+		printHuffmanTree(root, "");
+	}
 }
