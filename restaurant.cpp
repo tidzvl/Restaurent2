@@ -12,6 +12,8 @@ struct KhachHang
 {
 	string name;
 	string khach[128][2];
+	vector<char> ch;
+	vector<string> code;
 	int k = 0;
 	void cropName(){
 		Name charCount[128];
@@ -48,6 +50,32 @@ struct KhachHang
 			cout << khach[l][0] << ":" << khach[l][1] << "->";
 		}
 		cout << endl;
+	}
+	string convert2Bin(){
+		string result = "";
+		for (int i = 0; i < k; i++)
+		{
+			for(int j = 0; j < k; j++){
+				if(khach[i][0][0] == ch[j]){
+					for(int l = 0; l < stoi(khach[i][1]); l++){
+						result = result + code[j];
+					}
+				}
+			}
+		}
+		return result.substr(result.length()-10);
+	}
+
+	int convert210(){
+		string binaryString = convert2Bin();
+		int decimal = 0;
+		int size = binaryString.size();
+		for(int i = 0; i < size; i++) {
+		        if(binaryString[i] == '1') {
+		            decimal += pow(2, size - 1 - i);
+		        }
+		}
+		return decimal;
 	}
 };
 
@@ -173,15 +201,43 @@ void printHuffmanTree(HuffmanNode* root, string code){
 }
 
 KhachHang khach[1000];
+vector<HuffmanNode*> HuffKhach;
+// vector<string> Result;
 
-void Lapse(const string& name, int n){
+void addBin(HuffmanNode* root, string code, int i, vector<char> &ch, vector<string> &codes){
+	if(root){
+		if(root->data != '$'){
+			// cout << root->data << ": " << code << endl;
+			ch.push_back(root->data);
+			codes.push_back(code);
+		}
+		addBin(root->left, code + "0", i, ch, codes);
+		addBin(root->right, code + "1", i, ch, codes);
+	}
+}
+
+vector<int> G;
+vector<int> S;
+
+bool Lapse(const string& name, int n){
 	string result = sortStr(name);
 	khach[n].name = anCeasar(result);
 	// khach[n].name = sortStr(result);
 	khach[n].cropName();
+	if(khach[n].k <= 3) return false;
 	khach[n].Print();
 	// cout << sortStr(khach[n].name);
-	cout << endl;
+	HuffmanNode* root = buildHuffmanTree(khach, n);
+	HuffKhach.push_back(root);
+	addBin(root, "", n, khach[n].ch, khach[n].code);
+	// cout << khach[n].convert210() << endl;
+	// cout << "-----------------------------------------"<<endl;
+	if(khach[n].convert210()%2 != 0){
+		G.push_back(n);
+	}else{
+		S.push_back(n);
+	}
+	return true;
 }
 
 void simulate(string filename)
@@ -197,15 +253,19 @@ void simulate(string filename)
 			MAXSIZE = stoi(maxsize); 
 	    	}else if(line == "LAPSE") {
 	    		ss>>name;
-	    		Lapse(name, n);
-	    		n++;
+	    		if(Lapse(name, n));
+		    		n++;
 	    	}else if(line == "HAND"){
 	    	}
 	}
-	HuffmanNode* root = buildHuffmanTree(khach, 0);
-	for(int i = 0; i < n; i++){
-		cout << "-----------------------------------------" << endl;
-		root = buildHuffmanTree(khach, i);
-		printHuffmanTree(root, "");
+	cout << "-----------------------------------------"<<endl;
+	cout << "Nha` G: ";
+	for(int i = 0; i < G.size(); i++){
+		cout << G[i];
+	}
+	cout << endl;
+	cout << "Nha` S: ";
+	for(int i = 0; i < S.size(); i++){
+		cout << S[i];
 	}
 }
