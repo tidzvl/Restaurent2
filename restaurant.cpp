@@ -202,7 +202,7 @@ void printHuffmanTree(HuffmanNode* root, string code){
 
 KhachHang khach[1000];
 vector<HuffmanNode*> HuffKhach;
-// vector<string> Result;
+vector<int> Result;
 
 void addBin(HuffmanNode* root, string code, int i, vector<char> &ch, vector<string> &codes){
 	if(root){
@@ -225,12 +225,12 @@ bool Lapse(const string& name, int n){
 	// khach[n].name = sortStr(result);
 	khach[n].cropName();
 	if(khach[n].k <= 3) return false;
-	khach[n].Print();
+	// khach[n].Print();
 	// cout << sortStr(khach[n].name);
 	HuffmanNode* root = buildHuffmanTree(khach, n);
 	HuffKhach.push_back(root);
 	addBin(root, "", n, khach[n].ch, khach[n].code);
-	// cout << khach[n].convert210() << endl;
+	Result.push_back(khach[n].convert210());
 	// cout << "-----------------------------------------"<<endl;
 	if(khach[n].convert210()%2 != 0){
 		G.push_back(n);
@@ -240,22 +240,146 @@ bool Lapse(const string& name, int n){
 	return true;
 }
 
+struct Node{
+	int data;
+	Node *pLeft;
+	Node *pRight;
+};
+
+void TrongCay(Node* &t){
+	t = nullptr;
+}
+
+void AddNode(Node* &t, int x){
+	if(t == nullptr){
+		Node* root = new Node;
+		root->data = x;
+		root->pLeft = nullptr;
+		root->pRight = nullptr;
+		t = root;
+	}else{
+		if(x < t->data){
+			AddNode(t->pLeft, x);
+		}else{
+			AddNode(t->pRight, x);
+		}
+	}
+}
+
+string InOrder(Node* root) {
+    if(root == NULL) return "NULL";
+    string result;
+    string left = InOrder(root->pLeft); 
+    result += to_string(root->data) +  " ";
+    string right = InOrder(root->pRight); 
+
+    if(root->pLeft == nullptr && root->pRight == nullptr) return result;
+    return result+ "(" +left+ "," +right + ")";
+}
+vector<Node*> BST;
+
+void printInOrder(int n){
+	string s = InOrder(BST[n]);
+	cout << s << endl;
+}
+
+
+class Area {
+public:
+    int id;
+    int guests;
+    int timestamp;
+
+    Area(int id, int guests, int timestamp) : id(id), guests(guests), timestamp(timestamp) {}
+
+    bool operator<(const Area& other) const {
+        if (guests == other.guests) {
+            return timestamp < other.timestamp;
+        }
+        return guests > other.guests;
+    }
+};
+
+priority_queue<Area> heap;
+vector<int> areas;
+int MAXHEAP = 6;
+int timeheap = 0;
+
+void addGuest(int area) {
+    	if (area < 1 || area > MAXHEAP) {
+        	return;
+    	}
+    	areas[area - 1]++;
+    	heap.push(Area(area, areas[area - 1], timeheap++));
+}
+
+void removeGuest(int area) {
+    	if (area < 1 || area > MAXHEAP) {
+        	return;
+    	}
+    	if (areas[area - 1] == 0) {
+        	return;
+    	}
+    	areas[area - 1]--;
+    	if (areas[area - 1] > 0) {
+        	heap.push(Area(area, areas[area - 1], timeheap++));
+    	}
+}
+
+void printHeap() {
+    	priority_queue<Area> temp = heap;
+    	vector<bool> printed(MAXHEAP, false);
+    	while (!temp.empty()) {
+        	Area top = temp.top();
+        	temp.pop();
+	        if (top.guests == areas[top.id - 1] && !printed[top.id - 1]) {
+	            cout << "ID " << top.id << ": " << top.guests << " khach\n";
+	            printed[top.id - 1] = true;
+        	}
+    	}
+}
+
+void LapseNext(int n, int ID){
+	for(int i = 0; i < G.size(); i++){
+		if(n == G[i])
+			AddNode(BST[ID], Result[n]);
+	}
+	for(int l = 0; l < S.size(); l++){
+		if(n == S[l])
+			addGuest(ID);
+	}
+}
+
+int MAXSIZE;
+
 void simulate(string filename)
 {
-	int MAXSIZE, n = 0;
+	int n = 0;
+	int ID;
+	int keiteiken;
 	ifstream ss(filename);
-	string line, maxsize,name;
+	string line, maxsize,name, kei;
 	while(ss >> line)
 	{ 
 		if(line == "MAXSIZE")
 		{
 			ss >> maxsize;
 			MAXSIZE = stoi(maxsize); 
+			for(int i = 0; i < MAXSIZE; i++){
+				Node* tree;
+				TrongCay(tree);
+				BST.push_back(tree);
+			}
+			areas.resize(MAXSIZE, 0);
 	    	}else if(line == "LAPSE") {
 	    		ss>>name;
-	    		if(Lapse(name, n));
+	    		if(Lapse(name, n)){
+	    			ID = Result[n] % MAXSIZE + 1;
+		    		LapseNext(n, ID);
 		    		n++;
-	    	}else if(line == "HAND"){
+		    	}
+	    	}else if(line == "KOKUSEN"){
+
 	    	}
 	}
 	cout << "-----------------------------------------"<<endl;
@@ -268,4 +392,10 @@ void simulate(string filename)
 	for(int i = 0; i < S.size(); i++){
 		cout << S[i];
 	}
+	cout << endl;
+	for(int k = 0; k < MAXSIZE; k++){
+		// InOrder(BST[i]);
+		// printInOrder(i);
+	}
+	printHeap();
 }
