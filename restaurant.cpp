@@ -200,6 +200,17 @@ void printHuffmanTree(HuffmanNode* root, string code){
 	}
 }
 
+void printInOrder(HuffmanNode* root) {
+    	if (root) {
+	        printInOrder(root->left);
+        if (root->data != '$') {
+            	cout << root->data << "\n";
+        }
+        printInOrder(root->right);
+    }
+}
+
+
 KhachHang khach[1000];
 vector<HuffmanNode*> HuffKhach;
 vector<int> Result;
@@ -242,6 +253,7 @@ bool Lapse(const string& name, int n){
 
 struct Node{
 	int data;
+	int time;
 	Node *pLeft;
 	Node *pRight;
 };
@@ -250,6 +262,8 @@ void TrongCay(Node* &t){
 	t = nullptr;
 }
 
+unordered_map<Node*, queue<Node*>> nodeQueues;
+
 void AddNode(Node* &t, int x){
 	if(t == nullptr){
 		Node* root = new Node;
@@ -257,12 +271,14 @@ void AddNode(Node* &t, int x){
 		root->pLeft = nullptr;
 		root->pRight = nullptr;
 		t = root;
+		nodeQueues[t].push(root);
 	}else{
 		if(x < t->data){
 			AddNode(t->pLeft, x);
 		}else{
 			AddNode(t->pRight, x);
 		}
+		nodeQueues[t].push(t);
 	}
 }
 
@@ -276,6 +292,69 @@ string InOrder(Node* root) {
     if(root->pLeft == nullptr && root->pRight == nullptr) return result;
     return result+ "(" +left+ "," +right + ")";
 }
+
+void InOrderLML(Node* root) {
+    if (root != NULL) {
+        InOrderLML(root->pLeft);
+        cout << root->data << "\n";
+        InOrderLML(root->pRight);
+    }
+}
+
+void postOrder(Node* t, vector<int> &arr){
+	if(t == nullptr) return;
+	if(t != nullptr){		
+		postOrder(t->pLeft, arr);
+		postOrder(t->pRight, arr);
+		arr.push_back(t->data);
+	}
+}
+
+void deleteNode(Node* &root){
+    	if(root == nullptr) return;
+
+    	if(root->pLeft == nullptr){
+	        Node* temp = root;
+	        root = root->pRight;
+	        delete temp;
+    	}else if(root->pRight == nullptr){
+        	Node* temp = root;
+        	root = root->pLeft;
+        	delete temp;
+    	}else{
+        	Node* temp = root->pRight;
+        	while(temp->pLeft != nullptr){
+            		temp = temp->pLeft;
+        	}
+        	root->data = temp->data;
+        	deleteNode(root->pRight);
+    	}
+}
+
+void deleteTree(Node* &root){
+    if(root == nullptr) return;
+
+    deleteTree(root->pLeft);
+    deleteTree(root->pRight);
+
+    delete root;
+    root = nullptr;
+}
+
+void deleteCustomers(Node* &t, int Y){
+	if(Y >= nodeQueues[t].size()){
+	        deleteTree(t);
+	        nodeQueues[t] = queue<Node*>();  // Xóa hàng đợi tương ứng
+	}else{
+		while(Y-- > 0 && !nodeQueues[t].empty()){
+			Node* nodeToDelete = nodeQueues[t].front();
+			nodeQueues[t].pop();
+			deleteNode(nodeToDelete);
+		}
+	}
+}
+
+
 vector<Node*> BST;
 
 void printInOrder(int n){
@@ -289,8 +368,9 @@ public:
     int id;
     int guests;
     int timestamp;
+    int result;
 
-    Area(int id, int guests, int timestamp) : id(id), guests(guests), timestamp(timestamp) {}
+    Area(int id, int guests, int timestamp, int result) : id(id), guests(guests), timestamp(timestamp), result(result) {}
 
     bool operator<(const Area& other) const {
         if (guests == other.guests) {
@@ -305,26 +385,26 @@ vector<int> areas;
 int MAXHEAP = 6;
 int timeheap = 0;
 
-void addGuest(int area) {
+void addGuest(int area, int result) {
     	if (area < 1 || area > MAXHEAP) {
         	return;
     	}
     	areas[area - 1]++;
-    	heap.push(Area(area, areas[area - 1], timeheap++));
+    	heap.push(Area(area, areas[area - 1], timeheap++, result));
 }
 
-void removeGuest(int area) {
-    	if (area < 1 || area > MAXHEAP) {
-        	return;
-    	}
-    	if (areas[area - 1] == 0) {
-        	return;
-    	}
-    	areas[area - 1]--;
-    	if (areas[area - 1] > 0) {
-        	heap.push(Area(area, areas[area - 1], timeheap++));
-    	}
-}
+// void removeGuest(int area) {
+//     	if (area < 1 || area > MAXHEAP) {
+//         	return;
+//     	}
+//     	if (areas[area - 1] == 0) {
+//         	return;
+//     	}
+//     	areas[area - 1]--;
+//     	if (areas[area - 1] > 0) {
+//         	heap.push(Area(area, areas[area - 1], timeheap++));
+//     	}
+// }
 
 void printHeap() {
     	priority_queue<Area> temp = heap;
@@ -339,6 +419,45 @@ void printHeap() {
     	}
 }
 
+void removeNGuests(int N) {
+    	while (N > 0 && !heap.empty()) {
+        	Area top = heap.top();
+        	heap.pop();
+        	if (top.guests == areas[top.id - 1]) {
+            		int guestsToRemove = min(N, top.guests);
+            		areas[top.id - 1] -= guestsToRemove;
+           	 	N -= guestsToRemove;
+            		// cout << "Result-" << top.id << "\n";
+            		for (int i = 0; i < guestsToRemove; i++) {
+		            cout << top.result << "-" << top.id << "\n";
+		        }
+            		if (areas[top.id - 1] > 0) {
+                		heap.push(Area(top.id, areas[top.id - 1], timeheap++, top.result));
+            		}else{
+            			return;
+            		}
+        	}
+    	}
+}
+
+void printNGuests(int N) {
+    	priority_queue<Area> temp = heap;
+    	vector<bool> printed(MAXHEAP, false);
+    	while (N > 0 && !temp.empty()) {
+        	Area top = temp.top();
+        	temp.pop();
+        	if (top.guests == areas[top.id - 1] && !printed[top.id - 1]) {
+            		int guestsToPrint = min(N, top.guests);
+            		for (int i = 0; i < guestsToPrint; i++) {
+                		cout << top.id << "-" << top.result << "\n";
+            		}
+            		printed[top.id - 1] = true;
+            		N -= guestsToPrint;
+        	}
+    	}
+}
+
+
 void LapseNext(int n, int ID){
 	for(int i = 0; i < G.size(); i++){
 		if(n == G[i])
@@ -346,17 +465,84 @@ void LapseNext(int n, int ID){
 	}
 	for(int l = 0; l < S.size(); l++){
 		if(n == S[l])
-			addGuest(ID);
+			addGuest(ID, Result[n]);
 	}
 }
 
 int MAXSIZE;
+int n = 0;
+
+void kokusen(){
+	// AddNode(BST[4], 445);
+	// AddNode(BST[4], 223);
+	// AddNode(BST[4], 134);
+	// AddNode(BST[4], 998);
+	for(int i = 0; i < MAXSIZE; i++){
+		if(BST[i] != nullptr){
+			int Y;
+			vector<int> arr;
+			postOrder(BST[i], arr);
+			// for(int j = 0; j < arr.size(); j++){
+			// 	cout << arr[j] << " ";
+			// }
+			// cout << endl;
+			sort(arr.begin(), arr.end());
+			vector<vector<int>> permutations;
+			do {
+			        permutations.push_back(arr);
+			} while(next_permutation(arr.begin(), arr.end()));
+		    	for(const auto& perm : permutations) {
+		        	if(perm[0] == arr[arr.size() - 1]) {
+			            	for(int num : perm) {
+			                	// cout << num << ' ';
+			            	}
+			            	Y++;
+			            	// cout << endl;
+			        }
+		    	}
+		    	Y = Y%MAXSIZE;
+		    	// cout << Y << endl;
+		    	deleteCustomers(BST[i], Y);
+		}
+	}
+	// vector<int> arr;
+	// postOrder(BST[4], arr);
+	// int numPermutations = countPermutations(arr);
+	// cout << "4 : " << numPermutations << endl;
+	// for(int i = 0; i < MAXSIZE; i++){
+	// 	for(int j = 0; j < arr.size(); j++){
+	// 		cout << arr[j] << " ";
+	// 	}
+	// 	cout << endl;
+	// }
+}
+
+void Keiteiken(int num){
+	if(num < 1 || num > MAXSIZE) return;
+	removeNGuests(num);
+}
+
+void Hand(int n){
+	// khach[n-1].Print();
+	printInOrder(HuffKhach[n-1]);
+}
+
+void Limitless(int num){
+	// AddNode(BST[num], 123);
+	// AddNode(BST[num], 889);
+	// AddNode(BST[num], 1002);
+	// AddNode(BST[num], 133);
+	InOrderLML(BST[num]);
+}
+
+void Cleave(int num){
+	printNGuests(num);
+}
 
 void simulate(string filename)
 {
-	int n = 0;
 	int ID;
-	int keiteiken;
+	int keiteiken, num;
 	ifstream ss(filename);
 	string line, maxsize,name, kei;
 	while(ss >> line)
@@ -379,23 +565,36 @@ void simulate(string filename)
 		    		n++;
 		    	}
 	    	}else if(line == "KOKUSEN"){
-
+	    		kokusen();
+	    	}else if(line == "KEITEIKEN"){
+	    		ss>>keiteiken;
+	    		Keiteiken(keiteiken);
+	    	}else if(line == "HAND"){
+	    		Hand(n);
+	    	}else if(line == "LIMITLESS"){
+	    		ss>>num;
+	    		Limitless(num);
+	    	}else if(line == "CLEAVE"){
+	    		ss>>num;
+	    		Cleave(num);
 	    	}
 	}
-	cout << "-----------------------------------------"<<endl;
-	cout << "Nha` G: ";
-	for(int i = 0; i < G.size(); i++){
-		cout << G[i];
-	}
-	cout << endl;
-	cout << "Nha` S: ";
-	for(int i = 0; i < S.size(); i++){
-		cout << S[i];
-	}
-	cout << endl;
-	for(int k = 0; k < MAXSIZE; k++){
+	// cout << "-----------------------------------------"<<endl;
+	// cout << "Nha` G: ";
+	// for(int i = 0; i < G.size(); i++){
+	// 	cout << G[i];
+	// }
+	// cout << endl;
+	// cout << "Nha` S: ";
+	// for(int i = 0; i < S.size(); i++){
+	// 	cout << S[i];
+	// }
+	// cout << endl;
+	for(int k = 0; k < n; k++){
 		// InOrder(BST[i]);
-		// printInOrder(i);
+		// printInOrder(k);
+		// cout << Result[k] << endl;
+
 	}
-	printHeap();
+	// printHeap();
 }
