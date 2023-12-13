@@ -272,7 +272,7 @@ void AddNode(Node* &t, int x){
 		root->pRight = nullptr;
 		t = root;
 		nodeQueues[t].push(root);
-	}else{
+	}else{		
 		if(x < t->data){
 			AddNode(t->pLeft, x);
 		}else{
@@ -460,8 +460,9 @@ void printNGuests(int N) {
 
 void LapseNext(int n, int ID){
 	for(int i = 0; i < G.size(); i++){
-		if(n == G[i])
-			AddNode(BST[ID], Result[n]);
+		if(n == G[i]){
+			AddNode(BST[ID-1], Result[n]);
+		}
 	}
 	for(int l = 0; l < S.size(); l++){
 		if(n == S[l])
