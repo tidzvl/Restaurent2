@@ -23,7 +23,7 @@ struct KhachHang
 		    }
 
 		    for (char c : name) {
-		        charCount[c].count++;
+		        charCount[static_cast<int>(c)].count++;
 		    }
 		    int n = 128;
 		    for (int i = 0; i < n-1; i++) {
@@ -79,6 +79,24 @@ struct KhachHang
 	}
 };
 
+// string anCeasar(const string &name){
+// 	int freq[256] = {0};
+// 	for(char c : name){
+// 		freq[(int)c]++;
+// 	}
+// 	string result;
+// 	for(char c : name){
+// 		char encoded = c;
+// 		if(c >= 'a' && c <= 'z'){
+// 			encoded = 'a' + (c - 'a' - freq[(int)c] + 26) % 26;
+// 		}else if(c >= 'A' && c <= 'Z'){
+// 			encoded = 'A' + (c - 'A' - freq[(int)c] + 26) % 26;
+// 		}
+// 		result.push_back(encoded);
+// 	}
+// 	return result;
+// }
+
 string anCeasar(const string &name){
 	int freq[256] = {0};
 	for(char c : name){
@@ -88,9 +106,9 @@ string anCeasar(const string &name){
 	for(char c : name){
 		char encoded = c;
 		if(c >= 'a' && c <= 'z'){
-			encoded = 'a' + (c - 'a' - freq[(int)c] + 26) % 26;
+			encoded = 'a' + (c - 'a' + freq[(int)c]) % 26;
 		}else if(c >= 'A' && c <= 'Z'){
-			encoded = 'A' + (c - 'A' - freq[(int)c] + 26) % 26;
+			encoded = 'A' + (c - 'A' + freq[(int)c]) % 26;
 		}
 		result.push_back(encoded);
 	}
@@ -106,7 +124,7 @@ string sortStr(string name){
 	}
 
 	for (char c : name) {
-		charCount[c].count++;
+		charCount[static_cast<int>(c)].count++;
 	}
 	int n = 128;
 	for (int i = 0; i < n-1; i++) {
@@ -136,7 +154,9 @@ struct HuffmanNode
 	int frequency;
 	HuffmanNode* left;
 	HuffmanNode* right;
+	// int height;
 	HuffmanNode(char data, int frequency) : data(data), frequency(frequency), left(nullptr), right(nullptr){}
+
 };
 
 struct CompareNodes
@@ -201,10 +221,12 @@ void printHuffmanTree(HuffmanNode* root, string code){
 }
 
 void printInOrder(HuffmanNode* root) {
+	if(root ==  nullptr) return;
     	if (root) {
 	        printInOrder(root->left);
         if (root->data != '$') {
             	cout << root->data << "\n";
+            	// cout << root->data << " ";
         }
         printInOrder(root->right);
     }
@@ -226,6 +248,123 @@ void addBin(HuffmanNode* root, string code, int i, vector<char> &ch, vector<stri
 		addBin(root->right, code + "1", i, ch, codes);
 	}
 }
+//---------- xoay xoay xoay
+int rotationCount = 0;
+
+int height(HuffmanNode* N) {
+    	if (N == nullptr)
+        	return 0;
+    	return max(height(N->left), height(N->right)) + 1;
+}
+
+HuffmanNode* rightRotate(HuffmanNode* y) {
+    	HuffmanNode* x = y->left;
+    	HuffmanNode* T2 = x->right;
+    	x->right = y;
+    	y->left = T2;
+    	return x;
+}
+
+HuffmanNode* leftRotate(HuffmanNode* x) {
+    	HuffmanNode* y = x->right;
+    	HuffmanNode* T2 = y->left;
+    	y->left = x;
+    	x->right = T2;
+    	return y;
+}
+
+int getBalance(HuffmanNode* N) {
+    	if (N == nullptr)
+        	return 0;
+    	return height(N->left) - height(N->right);
+}
+
+void printTreeStructure(HuffmanNode* root, string indent = "", bool isLeft = true) {
+    	if (root != nullptr) {
+        	cout << indent;
+	        if (isLeft)
+	           	cout << "L----";
+	        else
+	            	cout << "R----";
+	        cout << root->data << "\n";
+
+	        indent += "     ";
+	        printTreeStructure(root->left, indent, true);
+	        printTreeStructure(root->right, indent, false);
+    	}
+}
+
+HuffmanNode* balanceTree(HuffmanNode* node, HuffmanNode* parent = nullptr) {
+    	if (node == nullptr || rotationCount >= 3) {
+        	return node;
+    	}
+
+    	int balance = getBalance(node);
+    	if (balance > 1) {
+        	if (getBalance(node->left) >= 0) {
+	            	node = rightRotate(node);
+	            	rotationCount++;
+	            	// cout << "After right rotation: \n";
+	            	// printTreeStructure(node);
+	        } else {
+	            	node->left = leftRotate(node->left);
+	            	node = rightRotate(node);
+	            	rotationCount++;
+	            	// cout << "After left-right rotation: \n";
+	           	//  printTreeStructure(node);
+	        }
+   	 } else if (balance < -1) {
+	        if (getBalance(node->right) <= 0) {
+	            	node = leftRotate(node);
+	            	rotationCount++;
+	            	// cout << "After left rotation: \n";
+	            	// printTreeStructure(node);
+	        } else {
+	            node->right = rightRotate(node->right);
+	            node = leftRotate(node);
+	            rotationCount++;
+	            // cout << "After right-left rotation: \n";
+	            // printTreeStructure(node);
+	        }
+    	}
+
+    	if (parent != nullptr) {
+	        if (parent->left == node) {
+	            	parent->left = node;
+	        } else if (parent->right == node) {
+	            	parent->right = node;
+	        }
+    	}
+
+    	if (rotationCount < 3) {
+	        node->left = balanceTree(node->left, node);
+	        node->right = balanceTree(node->right, node);
+    	}
+
+    	return node;
+}
+
+
+void printHuffmanTree2(HuffmanNode* root, int space = 0, int height = 10) {
+    	if (root == nullptr)
+        	return;
+
+    	space += height;
+
+    	printHuffmanTree2(root->right, space);
+
+    	cout << endl;
+    	for (int i = height; i < space; i++)
+        	cout << " ";
+    	cout << root->data << "\n";
+
+    	printHuffmanTree2(root->left, space);
+}
+
+
+
+//--
+
 
 vector<int> G;
 vector<int> S;
@@ -235,10 +374,35 @@ bool Lapse(const string& name, int n){
 	khach[n].name = anCeasar(result);
 	// khach[n].name = sortStr(result);
 	khach[n].cropName();
-	if(khach[n].k <= 3) return false;
+	if(khach[n].k <= 3){
+		khach[n].name.clear();
+		for(int i = 0; i < 128; i++){
+			khach[n].khach[i][0].clear();
+			khach[n].khach[i][1].clear();
+		}
+		khach[n].ch.clear();
+		khach[n].code.clear();
+		khach[n].k = 0;
+		return false;
+	}
 	// khach[n].Print();
 	// cout << sortStr(khach[n].name);
 	HuffmanNode* root = buildHuffmanTree(khach, n);
+	// printHuffmanTree2(root);
+	// printTreeStructure(root);
+	// cout << "---------------------------" << endl;
+	//-xoay
+	// root = balanceTree(root);
+	rotationCount = 0;
+        root = balanceTree(root);
+        // if (getBalance(root) >= -1 && getBalance(root) <= 1) {
+        //     cout << "Tree is balanced after " << rotationCount << " rotations\n";
+        // } else {
+        //     cout << "Tree is not balanced after " << rotationCount << " rotations\n";
+        // }
+	// printHuffmanTree2(root);
+	// printTreeStructure(root);
+	//
 	HuffKhach.push_back(root);
 	addBin(root, "", n, khach[n].ch, khach[n].code);
 	Result.push_back(khach[n].convert210());
@@ -341,8 +505,8 @@ void deleteTree(Node* &root){
     root = nullptr;
 }
 
-void deleteCustomers(Node* &t, int Y){
-	if(Y >= nodeQueues[t].size()){
+void deleteCustomers(Node* &t, size_t Y){
+	if( Y >= nodeQueues[t].size()){
 	        deleteTree(t);
 	        nodeQueues[t] = queue<Node*>();  // Xóa hàng đợi tương ứng
 	}else{
@@ -357,10 +521,10 @@ void deleteCustomers(Node* &t, int Y){
 
 vector<Node*> BST;
 
-void printInOrder(int n){
-	string s = InOrder(BST[n]);
-	cout << s << endl;
-}
+// void printInOrder(int n){
+// 	string s = InOrder(BST[n]);
+// 	cout << s << endl;
+// }
 
 
 class Area {
@@ -459,12 +623,12 @@ void printNGuests(int N) {
 
 
 void LapseNext(int n, int ID){
-	for(int i = 0; i < G.size(); i++){
+	for(size_t i = 0; i < G.size(); i++){
 		if(n == G[i]){
 			AddNode(BST[ID-1], Result[n]);
 		}
 	}
-	for(int l = 0; l < S.size(); l++){
+	for(size_t l = 0; l < S.size(); l++){
 		if(n == S[l])
 			addGuest(ID, Result[n]);
 	}
@@ -494,9 +658,9 @@ void kokusen(){
 			} while(next_permutation(arr.begin(), arr.end()));
 		    	for(const auto& perm : permutations) {
 		        	if(perm[0] == arr[arr.size() - 1]) {
-			            	for(int num : perm) {
-			                	// cout << num << ' ';
-			            	}
+			            	// for(int num : perm) {
+			                // 	// cout << num << ' ';
+			            	// }
 			            	Y++;
 			            	// cout << endl;
 			        }
@@ -525,6 +689,9 @@ void Keiteiken(int num){
 
 void Hand(int n){
 	// khach[n-1].Print();
+	if(HuffKhach.empty()) {
+		return;
+	}
 	printInOrder(HuffKhach[n-1]);
 }
 
@@ -591,11 +758,11 @@ void simulate(string filename)
 	// 	cout << S[i];
 	// }
 	// cout << endl;
-	for(int k = 0; k < n; k++){
+	// for(int k = 0; k < n; k++){
 		// InOrder(BST[i]);
 		// printInOrder(k);
 		// cout << Result[k] << endl;
-
-	}
+		// khach[k].Print();
+	// }
 	// printHeap();
 }
