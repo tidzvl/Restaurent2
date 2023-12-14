@@ -63,6 +63,7 @@ struct KhachHang
 				}
 			}
 		}
+		if(result.length() <= 10) return result;
 		return result.substr(result.length()-10);
 	}
 
@@ -374,7 +375,7 @@ bool Lapse(const string& name, int n){
 	khach[n].name = anCeasar(result);
 	// khach[n].name = sortStr(result);
 	khach[n].cropName();
-	if(khach[n].k <= 3){
+	if(khach[n].k < 3){
 		khach[n].name.clear();
 		for(int i = 0; i < 128; i++){
 			khach[n].khach[i][0].clear();
@@ -405,7 +406,7 @@ bool Lapse(const string& name, int n){
 	//
 	HuffKhach.push_back(root);
 	addBin(root, "", n, khach[n].ch, khach[n].code);
-	Result.push_back(khach[n].convert210());
+	Result.push_back(khach[n].convert210());	
 	// cout << "-----------------------------------------"<<endl;
 	if(khach[n].convert210()%2 != 0){
 		G.push_back(n);
@@ -638,10 +639,6 @@ int MAXSIZE;
 int n = 0;
 
 void kokusen(){
-	// AddNode(BST[4], 445);
-	// AddNode(BST[4], 223);
-	// AddNode(BST[4], 134);
-	// AddNode(BST[4], 998);
 	for(int i = 0; i < MAXSIZE; i++){
 		if(BST[i] != nullptr){
 			int Y;
@@ -659,12 +656,13 @@ void kokusen(){
 		    	for(const auto& perm : permutations) {
 		        	if(perm[0] == arr[arr.size() - 1]) {
 			            	// for(int num : perm) {
-			                // 	// cout << num << ' ';
+			                // 	cout << num << ' ';
 			            	// }
 			            	Y++;
 			            	// cout << endl;
 			        }
 		    	}
+		    	// cout <<"Y: " << Y << endl;
 		    	Y = Y%MAXSIZE;
 		    	// cout << Y << endl;
 		    	deleteCustomers(BST[i], Y);
@@ -696,11 +694,12 @@ void Hand(int n){
 }
 
 void Limitless(int num){
-	// AddNode(BST[num], 123);
-	// AddNode(BST[num], 889);
-	// AddNode(BST[num], 1002);
-	// AddNode(BST[num], 133);
-	InOrderLML(BST[num]);
+	// AddNode(BST[num-1], 1707);
+	// AddNode(BST[num-1], 2417);
+	// AddNode(BST[num-1], 2417);
+	// AddNode(BST[num-1], 1565);
+	InOrderLML(BST[num-1]);
+	// cout << InOrder(BST[num-1]) << endl;
 }
 
 void Cleave(int num){
@@ -728,6 +727,7 @@ void simulate(string filename)
 	    	}else if(line == "LAPSE") {
 	    		ss>>name;
 	    		if(Lapse(name, n)){
+	    			// cout << Result[n] << "%" << MAXSIZE <<"+1" << endl;
 	    			ID = Result[n] % MAXSIZE + 1;
 		    		LapseNext(n, ID);
 		    		n++;
@@ -759,7 +759,7 @@ void simulate(string filename)
 	// }
 	// cout << endl;
 	// for(int k = 0; k < n; k++){
-		// InOrder(BST[i]);
+		// InOrder(BST[k]);
 		// printInOrder(k);
 		// cout << Result[k] << endl;
 		// khach[k].Print();
