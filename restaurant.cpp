@@ -11,7 +11,9 @@ public:
 struct KhachHang
 {
 	string name;
+	string namenonsort;
 	string khach[128][2];
+	// string khachnonsort[128][2];
 	vector<char> ch;
 	vector<string> code;
 	int k = 0;
@@ -51,15 +53,28 @@ struct KhachHang
 		}
 		cout << endl;
 	}
+	// string convert2Bin(){
+	// 	string result = "";
+	// 	for (int i = 0; i < k; i++)
+	// 	{
+	// 		for(int j = 0; j < k; j++){
+	// 			if(khach[i][0][0] == ch[j]){
+	// 				for(int l = 0; l < stoi(khach[i][1]); l++){
+	// 					result = result + code[j];
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	if(result.length() <= 10) return result;
+	// 	return result.substr(result.length()-10);
+	// }
 	string convert2Bin(){
 		string result = "";
-		for (int i = 0; i < k; i++)
+		for (int i = 0; i < namenonsort.length(); i++)
 		{
 			for(int j = 0; j < k; j++){
-				if(khach[i][0][0] == ch[j]){
-					for(int l = 0; l < stoi(khach[i][1]); l++){
-						result = result + code[j];
-					}
+				if(namenonsort[i] == ch[j]){
+					result = result + code[j];
 				}
 			}
 		}
@@ -69,6 +84,7 @@ struct KhachHang
 
 	int convert210(){
 		string binaryString = convert2Bin();
+		// cout << binaryString << endl;
 		int decimal = 0;
 		int size = binaryString.size();
 		for(int i = 0; i < size; i++) {
@@ -76,6 +92,7 @@ struct KhachHang
 		            decimal += pow(2, size - 1 - i);
 		        }
 		}
+		// cout << decimal << endl;
 		return decimal;
 	}
 };
@@ -371,6 +388,7 @@ vector<int> G;
 vector<int> S;
 
 bool Lapse(const string& name, int n){
+	khach[n].namenonsort = anCeasar(name);
 	string result = sortStr(name);
 	khach[n].name = anCeasar(result);
 	// khach[n].name = sortStr(result);
@@ -387,13 +405,12 @@ bool Lapse(const string& name, int n){
 		return false;
 	}
 	// khach[n].Print();
-	// cout << sortStr(khach[n].name);
+	// // cout << sortStr(khach[n].name);
 	HuffmanNode* root = buildHuffmanTree(khach, n);
 	// printHuffmanTree2(root);
 	// printTreeStructure(root);
 	// cout << "---------------------------" << endl;
 	//-xoay
-	// root = balanceTree(root);
 	rotationCount = 0;
         root = balanceTree(root);
         // if (getBalance(root) >= -1 && getBalance(root) <= 1) {
@@ -402,8 +419,9 @@ bool Lapse(const string& name, int n){
         //     cout << "Tree is not balanced after " << rotationCount << " rotations\n";
         // }
 	// printHuffmanTree2(root);
+	// cout << "---------------------------" << endl;
 	// printTreeStructure(root);
-	//
+	
 	HuffKhach.push_back(root);
 	addBin(root, "", n, khach[n].ch, khach[n].code);
 	Result.push_back(khach[n].convert210());	
@@ -448,22 +466,22 @@ void AddNode(Node* &t, int x){
 }
 
 string InOrder(Node* root) {
-    if(root == NULL) return "NULL";
-    string result;
-    string left = InOrder(root->pLeft); 
-    result += to_string(root->data) +  " ";
-    string right = InOrder(root->pRight); 
+    	if(root == NULL) return "NULL";
+    	string result;
+    	string left = InOrder(root->pLeft); 
+    	result += to_string(root->data) +  " ";
+    	string right = InOrder(root->pRight); 
 
-    if(root->pLeft == nullptr && root->pRight == nullptr) return result;
-    return result+ "(" +left+ "," +right + ")";
+    	if(root->pLeft == nullptr && root->pRight == nullptr) return result;
+    	return result+ "(" +left+ "," +right + ")";
 }
 
 void InOrderLML(Node* root) {
-    if (root != NULL) {
-        InOrderLML(root->pLeft);
-        cout << root->data << "\n";
-        InOrderLML(root->pRight);
-    }
+    	if (root != NULL) {
+        	InOrderLML(root->pLeft);
+        	cout << root->data << "\n";
+        	InOrderLML(root->pRight);
+    	}
 }
 
 void postOrder(Node* t, vector<int> &arr){
@@ -497,13 +515,13 @@ void deleteNode(Node* &root){
 }
 
 void deleteTree(Node* &root){
-    if(root == nullptr) return;
+    	if(root == nullptr) return;
 
-    deleteTree(root->pLeft);
-    deleteTree(root->pRight);
+    	deleteTree(root->pLeft);
+    	deleteTree(root->pRight);
 
-    delete root;
-    root = nullptr;
+    	delete root;
+    	root = nullptr;
 }
 
 void deleteCustomers(Node* &t, size_t Y){
@@ -518,7 +536,23 @@ void deleteCustomers(Node* &t, size_t Y){
 		}
 	}
 }
-
+void createTempBST(Node* &tempBST, const vector<int> &permutation){
+    	for(int i = 0; i < permutation.size(); i++){
+        	AddNode(tempBST, permutation[i]);
+    	}
+}
+int isIdentical(Node* root1, Node* root2) {
+    	if (root1 == NULL && root2 == NULL)
+        	return 1;
+    	else if (root1 == NULL || root2 == NULL)
+        	return 0;
+    	else {
+	        if (root1->data == root2->data && isIdentical(root1->pLeft, root2->pLeft) && isIdentical(root1->pRight, root2->pRight))
+	            	return 1;
+	        else
+	            	return 0;
+    	}
+}
 
 vector<Node*> BST;
 
@@ -530,19 +564,19 @@ vector<Node*> BST;
 
 class Area {
 public:
-    int id;
-    int guests;
-    int timestamp;
-    int result;
+    	int id;
+    	int guests;
+    	int timestamp;
+    	int result;
 
-    Area(int id, int guests, int timestamp, int result) : id(id), guests(guests), timestamp(timestamp), result(result) {}
+    	Area(int id, int guests, int timestamp, int result) : id(id), guests(guests), timestamp(timestamp), result(result) {}
 
-    bool operator<(const Area& other) const {
-        if (guests == other.guests) {
-            return timestamp < other.timestamp;
-        }
-        return guests > other.guests;
-    }
+    	bool operator<(const Area& other) const {
+        	if (guests == other.guests) {
+            		return timestamp < other.timestamp;
+        	}
+        	return guests > other.guests;
+    	}
 };
 
 priority_queue<Area> heap;
@@ -653,18 +687,27 @@ void kokusen(){
 			do {
 			        permutations.push_back(arr);
 			} while(next_permutation(arr.begin(), arr.end()));
+		    	// for(const auto& perm : permutations) {
+		        // 	if(perm[0] == arr[arr.size() - 1]) {
+			//             	// for(int num : perm) {
+			//                 // 	cout << num << ' ';
+			//             	// }
+			//             	Y++;
+			//             	// cout << endl;
+			//         }
+		    	// }
 		    	for(const auto& perm : permutations) {
-		        	if(perm[0] == arr[arr.size() - 1]) {
-			            	// for(int num : perm) {
-			                // 	cout << num << ' ';
-			            	// }
-			            	Y++;
-			            	// cout << endl;
-			        }
+			    	Node* TempTree;
+			    	TrongCay(TempTree);
+			    	createTempBST(TempTree, perm);
+			    	if(isIdentical(TempTree, BST[i])){
+			    		Y++;
+			    	}
+			    	delete TempTree;
 		    	}
 		    	// cout <<"Y: " << Y << endl;
 		    	Y = Y%MAXSIZE;
-		    	// cout << Y << endl;
+		    	// cout << "Y%MAXSIZE = " << Y << endl;
 		    	deleteCustomers(BST[i], Y);
 		}
 	}
